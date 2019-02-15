@@ -1757,19 +1757,26 @@ def config(redis_unix_socket_path):
 def echo_empty_line():
     click.echo("\n")
 
+
 #
-#split test line with '-'
+# function name : print_test_title
+# description :  This function used for all the SSD and PCIE test info are start with a uniformed format .
+#                Details of format as following:
+# "--------------------------------------------------------------------------------"
+# "                                    testname                                    "
+# "--------------------------------------------------------------------------------"
 #
 
-def splitline(testname):
+def print_test_title(testname):
     click.echo("{0:-^80s}".format("-"))
     click.echo("{name: ^80s}".format(name=testname))
     click.echo("{0:-^80s}".format("-"))
 
 
 
-#
-# 'fwinfo' command ####
+# 
+# 'ssd_firmwareinfo' command ("show ssd_firmwareinfo /dev/xxx")
+# use this command to show SSD firmware info
 #
 
 @cli.command()
@@ -1779,12 +1786,13 @@ def ssd_firmwareinfo(device):
 
     checkin = 0
     testname="SSD Firmwareinfo Test"
+	# get the SSD information by call the smartctl cmd 
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -1802,8 +1810,9 @@ def ssd_firmwareinfo(device):
     echo_empty_line()
 
 
-#
-# 'capcity' command ####
+# 
+# 'ssd_capcity' command ("show ssd_capcity /dev/xxx")
+# use this command to show SSD capcity info
 #
 
 @cli.command()
@@ -1818,7 +1827,7 @@ def ssd_capcity(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -1835,8 +1844,9 @@ def ssd_capcity(device):
 
     echo_empty_line()
 
-#
-# 'sn' command ####
+# 
+# 'ssd_sn' command ("show ssd_sn /dev/xxx")
+# use this command to show SSD serial number
 #
 
 @cli.command()
@@ -1851,7 +1861,7 @@ def ssd_sn(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -1868,8 +1878,9 @@ def ssd_sn(device):
 
     echo_empty_line()
 
-#
-# 'remaining' command ####
+# 
+# 'ssd_remainTime' command ("show ssd_remainTime /dev/xxx")
+# use this command to show SSD Remaining Time
 #
 
 @cli.command()
@@ -1884,7 +1895,7 @@ def ssd_remainTime(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -1907,8 +1918,9 @@ def ssd_remainTime(device):
     echo_empty_line()
 
 
-#
-# 'pecycle' command ####
+# 
+# 'ssd_peCycle' command ("show ssd_peCycle /dev/xxx")
+# use this command to show SSD P/E cycle
 #
 
 @cli.command()
@@ -1923,7 +1935,7 @@ def ssd_peCycle(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -1951,8 +1963,9 @@ def ssd_peCycle(device):
     echo_empty_line()
 
 
-#
-# 'health' command ####
+# 
+# 'ssd_health' command ("show ssd_health /dev/xxx")
+# use this command to show SSD health status
 #
 
 @cli.command()
@@ -1967,7 +1980,7 @@ def ssd_health(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -2019,8 +2032,9 @@ def ssd_health(device):
     echo_empty_line()
 
 
-#
-# 'badblock' command ####
+# 
+# 'ssd_badblock' command ("show ssd_badblock /dev/xxx")
+# use this command to Check the later bad block status 
 #
 
 @cli.command()
@@ -2035,7 +2049,7 @@ def ssd_badblock(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -2063,14 +2077,15 @@ def ssd_badblock(device):
     echo_empty_line()
 
 
-#
-# 'temperature' command ####
+# 
+# 'ssd_temperature' command ("show ssd_temperature /dev/xxx")
+# use this command to show SSD temperature
 #
 
 @cli.command()
 @click.argument("device")
 def ssd_temperature(device):
-    """Read SSD temperature range 0~70 °C"""
+    """Read SSD temperature °C"""
 
     checkin = 0
     testname="SSD Temperature Test"
@@ -2079,7 +2094,7 @@ def ssd_temperature(device):
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #smartctl cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -2101,7 +2116,8 @@ def ssd_temperature(device):
 
 
 #
-# 'all' command ####
+# 'ssd_all' command 
+# execute all test iterms of SSD
 #
 
 @cli.command()
@@ -2132,7 +2148,7 @@ def ssd_all(device):
     #"""Show ssd fwinfo"""
     checkin = 0
     testname="SSD Firmwareinfo Test"
-    splitline(testname)
+    print_test_title(testname)
     for line in outputinfo:
         if ("Model Family" in line) or ("Device Model" in line) or ("Firmware Version" in line):
             click.echo(line.strip())
@@ -2147,7 +2163,7 @@ def ssd_all(device):
     checkin = 0
     testname="SSD Capcity Test"
 
-    splitline(testname)
+    print_test_title(testname)
     for line in outputinfo:
         if "User Capacity" in line:
             click.echo(line.strip())
@@ -2161,7 +2177,7 @@ def ssd_all(device):
     #"""Show ssd serial number"""
     checkin = 0
     testname="SSD SN Test"
-    splitline(testname)
+    print_test_title(testname)
     for line in outputinfo:
         if "Serial Number" in line:
             click.echo(line.strip())
@@ -2175,7 +2191,7 @@ def ssd_all(device):
     #"""Show ssd Remaining Time"""
     checkin = 0
     testname="SSD RemainTime Test"
-    splitline(testname)
+    print_test_title(testname)
     for line in outputattr:
         if "Power_On_Hours" in line:
             rawval = line.split()[-1]
@@ -2195,7 +2211,7 @@ def ssd_all(device):
     checkin = 0
     testname = "SSD P/E Cycle Test"
 
-    splitline(testname)
+    print_test_title(testname)
     for line in outputinfo:
         if "Device Model" in line:
             checkin = 1
@@ -2219,7 +2235,8 @@ def ssd_all(device):
     #"""Check the health status"""
     checkin = 0
     testname = "SSD Health Test"
-    splitline(testname)
+
+    print_test_title(testname)
     for line in outputinfo:
         if "Device Model" in line:
             checkin = 1
@@ -2254,7 +2271,7 @@ def ssd_all(device):
     #"""Check the later bad block status which may created"""
     checkin = 0
     testname="SSD Badblock Test"
-    splitline(testname)
+    print_test_title(testname)
     for line in outputattr:
         if "Later_Bad_Block" in line:
             rawval = line.split()[-1]
@@ -2278,7 +2295,7 @@ def ssd_all(device):
     #"""Read SSD temperature range 0~70 °C"""
     checkin = 0
     testname="SSD Temperature Test"
-    splitline(testname)
+    print_test_title(testname)
     for line in outputattr:
         if "Temperature_Celsius" in line:
             rawval = line.split()[9]
@@ -2314,8 +2331,10 @@ def ssd_help():
     click.echo("{0:30s}{1:<40}".format("    ssd_all         ",	"execute all test iterms of SSD "))
     click.echo("{0:30s}{1:<40}".format("    ssd_help        ",	"list help menu \n"))
 
+
 #
-# # check_pcie_speed ####
+# check_pcie_speed
+# check if the lnksta speed equals 5GT/s
 #
 
 def check_pcie_speed(device = {}):
@@ -2350,7 +2369,6 @@ def check_pcie_speed(device = {}):
                         checkin = 0
                         click.echo("LnkSta not match which is {0}".format(speed))
     erroutput.close()
-
     echo_empty_line()
 
 
@@ -2369,7 +2387,7 @@ def pcie_lnkspeed():
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #shell cmd return failed
     if proc.returncode > 0:
         for line in output:
@@ -2387,7 +2405,6 @@ def pcie_lnkspeed():
     check_pcie_speed(device)
 
 
-
 #
 # 'pcie_checkid' command ####
 #
@@ -2403,7 +2420,7 @@ def pcie_checkid():
     output = proc.stdout.readlines()
     (out, err) = proc.communicate()
 
-    splitline(testname)
+    print_test_title(testname)
     #shell cmd return failed
     if proc.returncode > 0:
         for line in output:
