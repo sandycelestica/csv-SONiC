@@ -1786,7 +1786,7 @@ def ssd_firmwareinfo(device):
 
     checkin = 0
     testname="SSD Firmwareinfo Test"
-	# get the SSD information by call the smartctl cmd 
+    # get the SSD information by call the smartctl cmd 
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1909,7 +1909,7 @@ def ssd_remainTime(device):
                 checkin = 1
 
     if(checkin == 1):
-        # remainTime = Power on Hours * (100/7.26) – 1 (xPower on Hours)
+        # remainTime = Power on Hours * (100/7.26) Â– 1 (xPower on Hours)
         remainingtime = poweron * 100 / 7.62 - poweron
         click.echo("Remaning Time: {0:.2f} Hours".format(remainingtime))
     else:
@@ -2085,7 +2085,7 @@ def ssd_badblock(device):
 @cli.command()
 @click.argument("device")
 def ssd_temperature(device):
-    """Read SSD temperature °C"""
+    """Read SSD temperature Â°C"""
 
     checkin = 0
     testname="SSD Temperature Test"
@@ -2108,7 +2108,7 @@ def ssd_temperature(device):
                 checkin = 1
 
     if(checkin == 1):
-        click.echo("Temperature_Celsius: {0}°C".format(temperature))
+        click.echo("Temperature_Celsius: {0}Â°C".format(temperature))
     else:
         click.echo("Can't get 'Temperature_Celsius' attributes")
 
@@ -2199,7 +2199,7 @@ def ssd_all(device):
             checkin = 1
 
     if(checkin == 1):
-        # remainTime = Power on Hours * (100/7.26) – 1 (xPower on Hours)
+        # remainTime = Power on Hours * (100/7.26) Â– 1 (xPower on Hours)
         remainingtime = poweron * 100 / 7.62 - poweron
         click.echo("Remaning Time: {0:.2f} Hours".format(remainingtime))
     else:
@@ -2292,7 +2292,7 @@ def ssd_all(device):
 
     echo_empty_line()
 
-    #"""Read SSD temperature range 0~70 °C"""
+    #"""Read SSD temperature range 0~70 Â°C"""
     checkin = 0
     testname="SSD Temperature Test"
     print_test_title(testname)
@@ -2303,7 +2303,7 @@ def ssd_all(device):
             checkin = 1
 
     if(checkin == 1):
-        click.echo("Temperature_Celsius: {0}°C".format(temperature))
+        click.echo("Temperature_Celsius: {0}Â°C".format(temperature))
     else:
         click.echo("Can't get 'Temperature_Celsius' attributes")
 
@@ -2327,7 +2327,7 @@ def ssd_help():
     click.echo("{0:30s}{1:<40}".format("    ssd_pecycle     ",	"show SSD P/E cycle"))
     click.echo("{0:30s}{1:<40}".format("    ssd_health      ",	"check the health status which should be > 95% after MFG test"))
     click.echo("{0:30s}{1:<40}".format("    ssd_badblock    ",	"check the later bad block status which may created during test"))
-    click.echo("{0:30s}{1:<40}".format("    ssd_temperature ",	"read SSD temperature; range 0~70 °C"))
+    click.echo("{0:30s}{1:<40}".format("    ssd_temperature ",	"read SSD temperature; range 0~70 Â°C"))
     click.echo("{0:30s}{1:<40}".format("    ssd_all         ",	"execute all test iterms of SSD "))
     click.echo("{0:30s}{1:<40}".format("    ssd_help        ",	"list help menu \n"))
 
