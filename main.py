@@ -1821,7 +1821,7 @@ def ssd_capcity(device):
     """Show ssd capcity"""
 
     checkin = 0
-    testname="SSD Capcity Test"
+    testname = "SSD Capcity Test"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1855,7 +1855,7 @@ def ssd_sn(device):
     """Show ssd serial number"""
 
     checkin = 0
-    testname="SSD SN Test"
+    testname = "SSD SN Test"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1889,7 +1889,7 @@ def ssd_remainTime(device):
     """Show ssd Remaining Time"""
 
     checkin = 0
-    testname="SSD RemainTime Test"
+    testname = "SSD RemainTime Test"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2043,7 +2043,7 @@ def ssd_badblock(device):
     """Check the later bad block status which may created"""
 
     checkin = 0
-    testname="SSD Badblock Test"
+    testname = "SSD Badblock Test"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2088,7 +2088,7 @@ def ssd_temperature(device):
     """Read SSD temperature °C"""
 
     checkin = 0
-    testname="SSD Temperature Test"
+    testname = "SSD Temperature Test"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2147,7 +2147,7 @@ def ssd_all(device):
 
     #"""Show ssd fwinfo"""
     checkin = 0
-    testname="SSD Firmwareinfo Test"
+    testname = "SSD Firmwareinfo Test"
     print_test_title(testname)
     for line in outputinfo:
         if ("Model Family" in line) or ("Device Model" in line) or ("Firmware Version" in line):
@@ -2161,7 +2161,7 @@ def ssd_all(device):
 
     #"""Show ssd capcity"""
     checkin = 0
-    testname="SSD Capcity Test"
+    testname = "SSD Capcity Test"
 
     print_test_title(testname)
     for line in outputinfo:
@@ -2176,7 +2176,7 @@ def ssd_all(device):
 
     #"""Show ssd serial number"""
     checkin = 0
-    testname="SSD SN Test"
+    testname = "SSD SN Test"
     print_test_title(testname)
     for line in outputinfo:
         if "Serial Number" in line:
@@ -2190,7 +2190,7 @@ def ssd_all(device):
 
     #"""Show ssd Remaining Time"""
     checkin = 0
-    testname="SSD RemainTime Test"
+    testname = "SSD RemainTime Test"
     print_test_title(testname)
     for line in outputattr:
         if "Power_On_Hours" in line:
@@ -2270,7 +2270,7 @@ def ssd_all(device):
 
     #"""Check the later bad block status which may created"""
     checkin = 0
-    testname="SSD Badblock Test"
+    testname = "SSD Badblock Test"
     print_test_title(testname)
     for line in outputattr:
         if "Later_Bad_Block" in line:
@@ -2294,7 +2294,7 @@ def ssd_all(device):
 
     #"""Read SSD temperature range 0~70 °C"""
     checkin = 0
-    testname="SSD Temperature Test"
+    testname = "SSD Temperature Test"
     print_test_title(testname)
     for line in outputattr:
         if "Temperature_Celsius" in line:
@@ -2341,7 +2341,7 @@ def check_pcie_speed(device = {}):
     """ check_pcie_speed """
 
     checkin = 0
-    testname="PCIE Speed Test"
+    testname = "PCIE Speed Test"
 
     erroutput = open("/dev/null", "w")
     for key, val in device.items():
@@ -2381,7 +2381,7 @@ def pcie_lnkspeed():
     """Chedk the link speed"""
 
     device = {}
-    testname="PCIE Speed Test"
+    testname = "PCIE Speed Test"
     command = "sudo lspci"
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2414,7 +2414,7 @@ def pcie_checkid():
     """Chedk Vender ID and Devie ID Check"""
 
     checkin = 1
-    testname="Vender ID and Devie ID Check Test"
+    testname = "Vender ID and Devie ID Check Test"
     command = "sudo lspci -n | grep b960 "
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
