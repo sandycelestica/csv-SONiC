@@ -1,4 +1,3 @@
- 
 #! /usr/bin/python -u
 
 import errno
@@ -80,8 +79,8 @@ class InterfaceAliasConverter(object):
                 if interface_name == port_name:
                     return self.port_dict[port_name]['alias']
 
-        # interface_name not in port_dict. Just return interface_name
-        return interface_name
+        click.echo("Invalid interface {}".format(interface_name))
+        raise click.Abort()
 
     def alias_to_name(self, interface_alias):
         """Return SONiC interface name if vendor
@@ -92,8 +91,8 @@ class InterfaceAliasConverter(object):
                 if interface_alias == self.port_dict[port_name]['alias']:
                     return port_name
 
-        # interface_alias not in port_dict. Just return interface_alias
-        return interface_alias
+        click.echo("Invalid interface {}".format(interface_alias))
+        raise click.Abort()
 
 
 # Global Config object
@@ -451,10 +450,6 @@ def expected(interfacename):
     #Swap Key and Value from interface: name to name: interface
     device2interface_dict = {}
     for port in natsorted(neighbor_dict.keys()):
-        temp_port = port
-        if get_interface_mode() == "alias":
-            port = iface_alias_converter.name_to_alias(port)
-            neighbor_dict[port] = neighbor_dict.pop(temp_port)
         device2interface_dict[neighbor_dict[port]['name']] = {'localPort': port, 'neighborPort': neighbor_dict[port]['port']}
 
     header = ['LocalPort', 'Neighbor', 'NeighborPort', 'NeighborLoopback', 'NeighborMgmt', 'NeighborType']
@@ -907,10 +902,6 @@ def interfaces():
                     oper = get_if_oper_state(iface)
                 else:
                     oper = "down"
-
-                if get_interface_mode() == "alias":
-                    iface = iface_alias_converter.name_to_alias(iface)
-
                 data.append([iface, ifaddresses[0][1], admin + "/" + oper])
             for ifaddr in ifaddresses[1:]:
                 data.append(["", ifaddr[1], ""])
@@ -1002,8 +993,6 @@ def interfaces():
                     oper = get_if_oper_state(iface)
                 else:
                     oper = "down"
-                if get_interface_mode() == "alias":
-                    iface = iface_alias_converter.name_to_alias(iface)
                 data.append([iface, ifaddresses[0][1], admin + "/" + oper])
             for ifaddr in ifaddresses[1:]:
                 data.append(["", ifaddr[1], ""])
@@ -1098,27 +1087,6 @@ def table(verbose):
 # 'platform' group ("show platform ...")
 #
 
-def get_hw_info_dict():
-    """
-    This function is used to get the HW info helper function  
-    """
-    hw_info_dict = {}
-    machine_info = sonic_platform.get_machine_info()
-    platform = sonic_platform.get_platform_info(machine_info)
-    config_db = ConfigDBConnector()
-    config_db.connect()
-    data = config_db.get_table('DEVICE_METADATA')
-    try: 
-        hwsku = data['localhost']['hwsku']
-    except KeyError:
-        hwsku = "Unknown"
-    version_info = sonic_platform.get_sonic_version_info()
-    asic_type = version_info['asic_type']
-    hw_info_dict['platform'] = platform
-    hw_info_dict['hwsku'] = hwsku
-    hw_info_dict['asic_type'] = asic_type
-    return hw_info_dict
-
 @cli.group(cls=AliasedGroup, default_if_no_args=False)
 def platform():
     """Show platform-specific hardware info"""
@@ -1132,10 +1100,24 @@ if (version_info and version_info.get('asic_type') == 'mellanox'):
 @platform.command()
 def summary():
     """Show hardware platform information"""
-    hw_info_dict = get_hw_info_dict()
-    click.echo("Platform: {}".format(hw_info_dict['platform']))
-    click.echo("HwSKU: {}".format(hw_info_dict['hwsku']))
-    click.echo("ASIC: {}".format(hw_info_dict['asic_type']))
+    machine_info = sonic_platform.get_machine_info()
+    platform = sonic_platform.get_platform_info(machine_info)
+
+    config_db = ConfigDBConnector()
+    config_db.connect()
+    data = config_db.get_table('DEVICE_METADATA')
+
+    try:
+        hwsku = data['localhost']['hwsku']
+    except KeyError:
+        hwsku = "Unknown"
+
+    version_info = sonic_platform.get_sonic_version_info()
+    asic_type = version_info['asic_type']
+
+    click.echo("Platform: {}".format(platform))
+    click.echo("HwSKU: {}".format(hwsku))
+    click.echo("ASIC: {}".format(asic_type))
 
 # 'syseeprom' subcommand ("show platform syseeprom")
 @platform.command()
@@ -1192,26 +1174,17 @@ def logging(process, lines, follow, verbose):
 #
 
 @cli.command()
-@click.option("--verbose", is_flag=True, help="Enable verbose output")
-def version(verbose):
+def version():
     """Show version information"""
     version_info = sonic_platform.get_sonic_version_info()
-    hw_info_dict = get_hw_info_dict()
-    serial_number_cmd = "sudo decode-syseeprom -s"
-    serial_number = subprocess.Popen(serial_number_cmd, shell=True, stdout=subprocess.PIPE)    
-    sys_uptime_cmd = "uptime"
-    sys_uptime = subprocess.Popen(sys_uptime_cmd, shell=True, stdout=subprocess.PIPE)
-    click.echo("\nSONiC Software Version: SONiC.{}".format(version_info['build_version']))
+
+    click.echo("SONiC Software Version: SONiC.{}".format(version_info['build_version']))
     click.echo("Distribution: Debian {}".format(version_info['debian_version']))
     click.echo("Kernel: {}".format(version_info['kernel_version']))
     click.echo("Build commit: {}".format(version_info['commit_id']))
     click.echo("Build date: {}".format(version_info['build_date']))
     click.echo("Built by: {}".format(version_info['built_by']))
-    click.echo("\nPlatform: {}".format(hw_info_dict['platform']))
-    click.echo("HwSKU: {}".format(hw_info_dict['hwsku']))
-    click.echo("ASIC: {}".format(hw_info_dict['asic_type']))
-    click.echo("Serial Number: {}".format(serial_number.stdout.read().strip()))
-    click.echo("Uptime: {}".format(sys_uptime.stdout.read().strip()))
+
     click.echo("\nDocker images:")
     cmd = 'sudo docker images --format "table {{.Repository}}\\t{{.Tag}}\\t{{.ID}}\\t{{.Size}}"'
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -1866,7 +1839,7 @@ def ssd_firmwareinfo(device):
 
     checkin = 0
     testname="SSD Firmwareinfo Test"
-    # get the SSD information by call the smartctl cmd 
+	# get the SSD information by call the smartctl cmd 
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1989,7 +1962,6 @@ def ssd_remainTime(device):
                 checkin = 1
 
     if(checkin == 1):
-        # remainTime = Power on Hours * (100/7.26)  1 (xPower on Hours)
         remainingtime = poweron * 100 / 7.62 - poweron
         click.echo("Remaning Time: {0:.2f} Hours".format(remainingtime))
     else:
@@ -2165,7 +2137,7 @@ def ssd_badblock(device):
 @cli.command()
 @click.argument("device")
 def ssd_temperature(device):
-    """Read SSD temperature °C"""
+    """Read SSD temperature C"""
 
     checkin = 0
     testname = "SSD Temperature Test"
@@ -2188,7 +2160,7 @@ def ssd_temperature(device):
                 checkin = 1
 
     if(checkin == 1):
-        click.echo("Temperature_Celsius: {0}°C".format(temperature))
+        click.echo("Temperature_Celsius: {0}C".format(temperature))
     else:
         click.echo("Can't get 'Temperature_Celsius' attributes")
 
@@ -2279,7 +2251,6 @@ def ssd_all(device):
             checkin = 1
 
     if(checkin == 1):
-        # remainTime = Power on Hours * (100/7.26)  1 (xPower on Hours)
         remainingtime = poweron * 100 / 7.62 - poweron
         click.echo("Remaning Time: {0:.2f} Hours".format(remainingtime))
     else:
@@ -2372,7 +2343,7 @@ def ssd_all(device):
 
     echo_empty_line()
 
-    #"""Read SSD temperature range 0~70 °C"""
+    #"""Read SSD temperature range 0~70 C"""
     checkin = 0
     testname = "SSD Temperature Test"
     print_test_title(testname)
@@ -2383,7 +2354,7 @@ def ssd_all(device):
             checkin = 1
 
     if(checkin == 1):
-        click.echo("Temperature_Celsius: {0}°C".format(temperature))
+        click.echo("Temperature_Celsius: {0}C".format(temperature))
     else:
         click.echo("Can't get 'Temperature_Celsius' attributes")
 
@@ -2407,7 +2378,7 @@ def ssd_help():
     click.echo("{0:30s}{1:<40}".format("    ssd_pecycle     ",	"show SSD P/E cycle"))
     click.echo("{0:30s}{1:<40}".format("    ssd_health      ",	"check the health status which should be > 95% after MFG test"))
     click.echo("{0:30s}{1:<40}".format("    ssd_badblock    ",	"check the later bad block status which may created during test"))
-    click.echo("{0:30s}{1:<40}".format("    ssd_temperature ",	"read SSD temperature; range 0~70 °C"))
+    click.echo("{0:30s}{1:<40}".format("    ssd_temperature ",	"read SSD temperature; range 0~70 C"))
     click.echo("{0:30s}{1:<40}".format("    ssd_all         ",	"execute all test iterms of SSD "))
     click.echo("{0:30s}{1:<40}".format("    ssd_help        ",	"list help menu \n"))
 
