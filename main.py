@@ -1,3 +1,4 @@
+ 
 #! /usr/bin/python -u
 
 import errno
@@ -79,8 +80,8 @@ class InterfaceAliasConverter(object):
                 if interface_name == port_name:
                     return self.port_dict[port_name]['alias']
 
-        click.echo("Invalid interface {}".format(interface_name))
-        raise click.Abort()
+        # interface_name not in port_dict. Just return interface_name
+        return interface_name
 
     def alias_to_name(self, interface_alias):
         """Return SONiC interface name if vendor
@@ -91,8 +92,8 @@ class InterfaceAliasConverter(object):
                 if interface_alias == self.port_dict[port_name]['alias']:
                     return port_name
 
-        click.echo("Invalid interface {}".format(interface_alias))
-        raise click.Abort()
+        # interface_alias not in port_dict. Just return interface_alias
+        return interface_alias
 
 
 # Global Config object
@@ -263,6 +264,14 @@ def run_command_in_alias_mode(command):
                                iface_alias_converter.alias_max_length))
                 print_output_in_alias_mode(output, index)
 
+            elif command.startswith("intfstat"):
+                """Show RIF counters"""
+                index = 0
+                if output.startswith("IFACE"):
+                    output = output.replace("IFACE", "IFACE".rjust(
+                               iface_alias_converter.alias_max_length))
+                print_output_in_alias_mode(output, index)
+
             elif command == "pfcstat":
                 """Show pfc counters"""
                 index = 0
@@ -425,15 +434,27 @@ def expected(interfacename):
     """Show expected neighbor information by interfaces"""
     neighbor_cmd = 'sonic-cfggen -d --var-json "DEVICE_NEIGHBOR"'
     p1 = subprocess.Popen(neighbor_cmd, shell=True, stdout=subprocess.PIPE)
-    neighbor_dict = json.loads(p1.stdout.read())
+    try :
+        neighbor_dict = json.loads(p1.stdout.read())
+    except ValueError:
+        print("DEVICE_NEIGHBOR information is not present.")
+        return
 
     neighbor_metadata_cmd = 'sonic-cfggen -d --var-json "DEVICE_NEIGHBOR_METADATA"'
     p2 = subprocess.Popen(neighbor_metadata_cmd, shell=True, stdout=subprocess.PIPE)
-    neighbor_metadata_dict = json.loads(p2.stdout.read())
+    try :
+        neighbor_metadata_dict = json.loads(p2.stdout.read())
+    except ValueError:
+        print("DEVICE_NEIGHBOR_METADATA information is not present.")
+        return
 
     #Swap Key and Value from interface: name to name: interface
     device2interface_dict = {}
     for port in natsorted(neighbor_dict.keys()):
+        temp_port = port
+        if get_interface_mode() == "alias":
+            port = iface_alias_converter.name_to_alias(port)
+            neighbor_dict[port] = neighbor_dict.pop(temp_port)
         device2interface_dict[neighbor_dict[port]['name']] = {'localPort': port, 'neighborPort': neighbor_dict[port]['port']}
 
     header = ['LocalPort', 'Neighbor', 'NeighborPort', 'NeighborLoopback', 'NeighborMgmt', 'NeighborType']
@@ -472,7 +493,7 @@ def transceiver():
 def eeprom(interfacename, dump_dom, verbose):
     """Show interface transceiver EEPROM information"""
 
-    cmd = "sudo sfputil show eeprom"
+    cmd = "sfpshow eeprom"
 
     if dump_dom:
         cmd += " --dom"
@@ -508,7 +529,7 @@ def lpmode(interfacename, verbose):
 def presence(interfacename, verbose):
     """Show interface transceiver presence"""
 
-    cmd = "sudo sfputil show presence"
+    cmd = "sfpshow presence"
 
     if interfacename is not None:
         if get_interface_mode() == "alias":
@@ -554,23 +575,41 @@ def status(interfacename, verbose):
 
 
 # 'counters' subcommand ("show interfaces counters")
-@interfaces.command()
+@interfaces.group(invoke_without_command=True)
 @click.option('-a', '--printall', is_flag=True)
 @click.option('-c', '--clear', is_flag=True)
 @click.option('-p', '--period')
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
-def counters(period, printall, clear, verbose):
+@click.pass_context
+def counters(ctx, verbose, period, clear, printall):
     """Show interface counters"""
 
-    cmd = "portstat"
+    if ctx.invoked_subcommand is None:
+        cmd = "portstat"
 
-    if clear:
-        cmd += " -c"
-    else:
-        if printall:
-            cmd += " -a"
-        if period is not None:
-            cmd += " -p {}".format(period)
+        if clear:
+            cmd += " -c"
+        else:
+            if printall:
+                cmd += " -a"
+            if period is not None:
+                cmd += " -p {}".format(period)
+
+        run_command(cmd, display_cmd=verbose)
+
+# 'counters' subcommand ("show interfaces counters rif")
+@counters.command()
+@click.argument('interface', metavar='<interface_name>', required=False, type=str)
+@click.option('-p', '--period')
+@click.option('--verbose', is_flag=True, help="Enable verbose output")
+def rif(interface, period, verbose):
+    """Show interface counters"""
+
+    cmd = "intfstat"
+    if period is not None:
+        cmd += " -p {}".format(period)
+    if interface is not None:
+        cmd += " -i {}".format(interface)
 
     run_command(cmd, display_cmd=verbose)
 
@@ -782,7 +821,7 @@ def route_map(route_map_name, verbose):
         cmd += ' {}'.format(route_map_name)
     cmd += '"'
     run_command(cmd, display_cmd=verbose)
-	
+
 #
 # 'ip' group ("show ip ...")
 #
@@ -868,6 +907,10 @@ def interfaces():
                     oper = get_if_oper_state(iface)
                 else:
                     oper = "down"
+
+                if get_interface_mode() == "alias":
+                    iface = iface_alias_converter.name_to_alias(iface)
+
                 data.append([iface, ifaddresses[0][1], admin + "/" + oper])
             for ifaddr in ifaddresses[1:]:
                 data.append(["", ifaddr[1], ""])
@@ -959,6 +1002,8 @@ def interfaces():
                     oper = get_if_oper_state(iface)
                 else:
                     oper = "down"
+                if get_interface_mode() == "alias":
+                    iface = iface_alias_converter.name_to_alias(iface)
                 data.append([iface, ifaddresses[0][1], admin + "/" + oper])
             for ifaddr in ifaddresses[1:]:
                 data.append(["", ifaddr[1], ""])
@@ -1053,6 +1098,27 @@ def table(verbose):
 # 'platform' group ("show platform ...")
 #
 
+def get_hw_info_dict():
+    """
+    This function is used to get the HW info helper function  
+    """
+    hw_info_dict = {}
+    machine_info = sonic_platform.get_machine_info()
+    platform = sonic_platform.get_platform_info(machine_info)
+    config_db = ConfigDBConnector()
+    config_db.connect()
+    data = config_db.get_table('DEVICE_METADATA')
+    try: 
+        hwsku = data['localhost']['hwsku']
+    except KeyError:
+        hwsku = "Unknown"
+    version_info = sonic_platform.get_sonic_version_info()
+    asic_type = version_info['asic_type']
+    hw_info_dict['platform'] = platform
+    hw_info_dict['hwsku'] = hwsku
+    hw_info_dict['asic_type'] = asic_type
+    return hw_info_dict
+
 @cli.group(cls=AliasedGroup, default_if_no_args=False)
 def platform():
     """Show platform-specific hardware info"""
@@ -1066,31 +1132,17 @@ if (version_info and version_info.get('asic_type') == 'mellanox'):
 @platform.command()
 def summary():
     """Show hardware platform information"""
-    machine_info = sonic_platform.get_machine_info()
-    platform = sonic_platform.get_platform_info(machine_info)
-
-    config_db = ConfigDBConnector()
-    config_db.connect()
-    data = config_db.get_table('DEVICE_METADATA')
-
-    try:
-        hwsku = data['localhost']['hwsku']
-    except KeyError:
-        hwsku = "Unknown"
-
-    version_info = sonic_platform.get_sonic_version_info()
-    asic_type = version_info['asic_type']
-
-    click.echo("Platform: {}".format(platform))
-    click.echo("HwSKU: {}".format(hwsku))
-    click.echo("ASIC: {}".format(asic_type))
+    hw_info_dict = get_hw_info_dict()
+    click.echo("Platform: {}".format(hw_info_dict['platform']))
+    click.echo("HwSKU: {}".format(hw_info_dict['hwsku']))
+    click.echo("ASIC: {}".format(hw_info_dict['asic_type']))
 
 # 'syseeprom' subcommand ("show platform syseeprom")
 @platform.command()
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
 def syseeprom(verbose):
     """Show system EEPROM information"""
-    cmd = "sudo decode-syseeprom"
+    cmd = "sudo decode-syseeprom -d"
     run_command(cmd, display_cmd=verbose)
 
 # 'psustatus' subcommand ("show platform psustatus")
@@ -1099,7 +1151,7 @@ def syseeprom(verbose):
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
 def psustatus(index, verbose):
     """Show PSU status information"""
-    cmd = "sudo psuutil status"
+    cmd = "psushow -s"
 
     if index >= 0:
         cmd += " -i {}".format(index)
@@ -1140,17 +1192,26 @@ def logging(process, lines, follow, verbose):
 #
 
 @cli.command()
-def version():
+@click.option("--verbose", is_flag=True, help="Enable verbose output")
+def version(verbose):
     """Show version information"""
     version_info = sonic_platform.get_sonic_version_info()
-
-    click.echo("SONiC Software Version: SONiC.{}".format(version_info['build_version']))
+    hw_info_dict = get_hw_info_dict()
+    serial_number_cmd = "sudo decode-syseeprom -s"
+    serial_number = subprocess.Popen(serial_number_cmd, shell=True, stdout=subprocess.PIPE)    
+    sys_uptime_cmd = "uptime"
+    sys_uptime = subprocess.Popen(sys_uptime_cmd, shell=True, stdout=subprocess.PIPE)
+    click.echo("\nSONiC Software Version: SONiC.{}".format(version_info['build_version']))
     click.echo("Distribution: Debian {}".format(version_info['debian_version']))
     click.echo("Kernel: {}".format(version_info['kernel_version']))
     click.echo("Build commit: {}".format(version_info['commit_id']))
     click.echo("Build date: {}".format(version_info['build_date']))
     click.echo("Built by: {}".format(version_info['built_by']))
-
+    click.echo("\nPlatform: {}".format(hw_info_dict['platform']))
+    click.echo("HwSKU: {}".format(hw_info_dict['hwsku']))
+    click.echo("ASIC: {}".format(hw_info_dict['asic_type']))
+    click.echo("Serial Number: {}".format(serial_number.stdout.read().strip()))
+    click.echo("Uptime: {}".format(sys_uptime.stdout.read().strip()))
     click.echo("\nDocker images:")
     cmd = 'sudo docker images --format "table {{.Repository}}\\t{{.Tag}}\\t{{.ID}}\\t{{.Size}}"'
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -1717,21 +1778,40 @@ def config(redis_unix_socket_path):
     config_db = ConfigDBConnector(**kwargs)
     config_db.connect(wait_for_init=False)
     data = config_db.get_table('WARM_RESTART')
+    # Python dictionary keys() Method
     keys = data.keys()
 
-    def tablelize(keys, data):
+    state_db = SonicV2Connector(host='127.0.0.1')
+    state_db.connect(state_db.STATE_DB, False)   # Make one attempt only
+    TABLE_NAME_SEPARATOR = '|'
+    prefix = 'WARM_RESTART_ENABLE_TABLE' + TABLE_NAME_SEPARATOR
+    _hash = '{}{}'.format(prefix, '*')
+    # DBInterface keys() method
+    enable_table_keys = state_db.keys(state_db.STATE_DB, _hash)
+
+    def tablelize(keys, data, enable_table_keys, prefix):
         table = []
+
+        if enable_table_keys is not None:
+            for k in enable_table_keys:
+                k = k.replace(prefix, "")
+                if k not in keys:
+                    keys.append(k)
 
         for k in keys:
             r = []
             r.append(k)
 
-            if 'enable' not in  data[k]:
+            enable_k = prefix + k
+            if enable_table_keys is None or enable_k not in enable_table_keys:
                 r.append("false")
             else:
-                r.append(data[k]['enable'])
+                r.append(state_db.get(state_db.STATE_DB, enable_k, "enable"))
 
-            if 'neighsyncd_timer' in  data[k]:
+            if k not in data:
+                r.append("NULL")
+                r.append("NULL")
+            elif 'neighsyncd_timer' in  data[k]:
                 r.append("neighsyncd_timer")
                 r.append(data[k]['neighsyncd_timer'])
             elif 'bgp_timer' in data[k]:
@@ -1749,8 +1829,8 @@ def config(redis_unix_socket_path):
         return table
 
     header = ['name', 'enable', 'timer_name', 'timer_duration']
-    click.echo(tabulate(tablelize(keys, data), header))
-
+    click.echo(tabulate(tablelize(keys, data, enable_table_keys, prefix), header))
+    state_db.close(state_db.STATE_DB)
 #
 #echo empty line
 #
