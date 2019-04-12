@@ -1826,25 +1826,12 @@ def print_test_title(testname):
     click.echo("{0:-^80s}".format("-"))
 
 
-
-# 
-# 'ssd_firmwareinfo' command ("show ssd_firmwareinfo /dev/xxx")
-# use this command to show SSD firmware info
-#
-
-@cli.group(cls=AliasedGroup, default_if_no_args=False)
-def ssd():
-	"""Show ssd info"""
-	pass
-
-@ssd.command()
-@click.argument("device")
-def firmwareinfo(device):
-    """show ssd firmware info"""
+	
+def show_ssd_firmwareinfo(device):
 
     checkin = 0
-    testname="SSD Firmwareinfo Test"
-	# get the SSD information by call the smartctl cmd 
+    testname="Show SSD Firmware Info"
+    # get the SSD information by call the smartctl cmd 
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1867,19 +1854,11 @@ def firmwareinfo(device):
 
     echo_empty_line()
 
-
-# 
-# 'ssd capacity' command ("show ssd capacity /dev/xxx")
-# use this command to show SSD capacity info
-#
-
-@ssd.command()
-@click.argument("device")
-def capacity(device):
-    """show ssd capacity"""
+	
+def show_ssd_capacityinfo(device):
 
     checkin = 0
-    testname = "SSD Capacity Test"
+    testname = "Show SSD Capacity"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1901,19 +1880,15 @@ def capacity(device):
         click.echo("Can't get SSD Capacity")
 
     echo_empty_line()
-
-# 
-# 'ssd_sn' command ("show ssd_sn /dev/xxx")
-# use this command to show SSD serial number
-#
-
-@ssd.command()
-@click.argument("device")
-def sn(device):
-    """show ssd serial number"""
+	
+	
+	
+	
+	
+def show_ssd_serialnumber(device):
 
     checkin = 0
-    testname = "SSD SN Test"
+    testname = "Show SSD Serial Number"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1936,18 +1911,13 @@ def sn(device):
 
     echo_empty_line()
 
-# 
-# 'ssd_remainTime' command ("show ssd_remainTime /dev/xxx")
-# use this command to show SSD Remaining Time
-#
-
-@ssd.command()
-@click.argument("device")
-def remainTime(device):
-    """show ssd Remaining Time"""
+	
+	
+	
+def show_ssd_remainingtime(device):
 
     checkin = 0
-    testname = "SSD RemainTime Test"
+    testname = "Show SSD Remaining Time"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -1974,19 +1944,12 @@ def remainTime(device):
 
     echo_empty_line()
 
-
-# 
-# 'ssd_peCycle' command ("show ssd_peCycle /dev/xxx")
-# use this command to show SSD P/E cycle
-#
-
-@ssd.command()
-@click.argument("device")
-def peCycle(device):
-    """show ssd P/E cycle"""
+	
+	
+def show_ssd_pecycle(device):
 
     checkin = 0
-    testname = "SSD P/E Cycle Test"
+    testname = "Show SSD P/E Cycle"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2019,19 +1982,12 @@ def peCycle(device):
 
     echo_empty_line()
 
-
-# 
-# 'ssd_health' command ("show ssd_health /dev/xxx")
-# use this command to show SSD health status
-#
-
-@ssd.command()
-@click.argument("device")
-def health(device):
-    """show ssd health status"""
+	
+	
+def show_ssd_health(device):
 
     checkin = 0
-    testname = "SSD Health Test"
+    testname = "Show SSD Health"
     command = "sudo smartctl -i " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2087,20 +2043,14 @@ def health(device):
         click.echo("Can't get Average_Erase_Count attributes")
 
     echo_empty_line()
+	
 
 
-# 
-# 'ssd_badblock' command ("show ssd_badblock /dev/xxx")
-# use this command to Check the later bad block status 
-#
 
-@ssd.command()
-@click.argument("device")
-def badblock(device):
-    """show ssd bad block status which may create"""
+def show_ssd_badblock(device):
 
     checkin = 0
-    testname = "SSD Badblock Test"
+    testname = "Show SSD Badblock"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2134,18 +2084,10 @@ def badblock(device):
     echo_empty_line()
 
 
-# 
-# 'ssd_temperature' command ("show ssd temperature /dev/xxx")
-# use this command to show SSD temperature
-#
-
-@ssd.command()
-@click.argument("device")
-def temperature(device):
-    """show ssd temperature"""
+def show_ssd_tempinfo(device):
 
     checkin = 0
-    testname = "SSD Temperature Test"
+    testname = "Show SSD Temperature"
     command = "sudo smartctl -A " + device
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2170,6 +2112,103 @@ def temperature(device):
         click.echo("Can't get 'Temperature_Celsius' attributes")
 
     echo_empty_line()
+	
+	
+# 
+# 'ssd_firmwareinfo' command ("show ssd_firmwareinfo /dev/xxx")
+# use this command to show SSD firmware info
+#
+
+@cli.group(cls=AliasedGroup, default_if_no_args=False)
+def ssd():
+    """Show ssd info"""
+    pass
+
+@ssd.command()
+@click.argument("device")
+def firmwareinfo(device):
+    """show ssd firmware info"""
+    show_ssd_firmwareinfo(device)
+
+
+# 
+# 'ssd capacity' command ("show ssd capacity /dev/xxx")
+# use this command to show SSD capacity info
+#
+
+@ssd.command()
+@click.argument("device")
+def capacity(device):
+    """show ssd capacity"""
+    show_ssd_capacityinfo(device)
+
+# 
+# 'ssd_sn' command ("show ssd_sn /dev/xxx")
+# use this command to show SSD serial number
+#
+
+@ssd.command()
+@click.argument("device")
+def sn(device):
+    """show ssd serial number"""
+    show_ssd_serialnumber(device)
+# 
+# 'ssd_remainTime' command ("show ssd_remainTime /dev/xxx")
+# use this command to show SSD Remaining Time
+#
+
+@ssd.command()
+@click.argument("device")
+def remainTime(device):
+    """show ssd Remaining Time"""
+    show_ssd_remainingtime(device)
+
+
+# 
+# 'ssd_peCycle' command ("show ssd_peCycle /dev/xxx")
+# use this command to show SSD P/E cycle
+#
+
+@ssd.command()
+@click.argument("device")
+def peCycle(device):
+    """show ssd P/E cycle"""
+    show_ssd_pecycle(device)
+
+# 
+# 'ssd_health' command ("show ssd_health /dev/xxx")
+# use this command to show SSD health status
+#
+
+@ssd.command()
+@click.argument("device")
+def health(device):
+    """show ssd health status"""
+    show_ssd_health(device)
+
+
+# 
+# 'ssd_badblock' command ("show ssd_badblock /dev/xxx")
+# use this command to Check the later bad block status 
+#
+
+@ssd.command()
+@click.argument("device")
+def badblock(device):
+    """show ssd bad block status which may create"""
+    show_ssd_badblock(device)
+
+
+# 
+# 'ssd_temperature' command ("show ssd temperature /dev/xxx")
+# use this command to show SSD temperature
+#
+
+@ssd.command()
+@click.argument("device")
+def temperature(device):
+    """show ssd temperature"""
+    show_ssd_tempinfo(device)
 
 
 #
@@ -2180,190 +2219,31 @@ def temperature(device):
 @ssd.command()
 @click.argument("device")
 def all(device):
-    """show ssd test iterms"""
+    """show ssd test iterms"""    
 
-    command = "sudo smartctl -i " + device
-    procinfo = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    outputinfo = procinfo.stdout.readlines()
-    (out, err) = procinfo.communicate()
-    #smartctl cmd return failed
-    if procinfo.returncode > 0:
-        for line in outputinfo:
-            click.echo(line.strip())
-        return
+    #Show ssd fwinfo
+    show_ssd_firmwareinfo(device)
 
-    command = "sudo smartctl -A " + device
-    procattr = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    outputattr = procattr.stdout.readlines()
-    (out, err) = procattr.communicate()
-    #smartctl cmd return failed
-    if procattr.returncode > 0:
-        for line in outputattr:
-            click.echo(line.strip())
-        return
+    #Show ssd capacity
+    show_ssd_capacityinfo(device)
 
-    #"""Show ssd fwinfo"""
-    checkin = 0
-    testname = "SSD Firmwareinfo Test"
-    print_test_title(testname)
-    for line in outputinfo:
-        if ("Model Family" in line) or ("Device Model" in line) or ("Firmware Version" in line):
-            click.echo(line.strip())
-            checkin = 1
+    #Show ssd serial number
+    show_ssd_serialnumber(device)
 
-    if (checkin == 0):
-        click.echo("Can't get Firmwareinfo")
-
-    echo_empty_line()
-
-    #"""Show ssd capacity"""
-    checkin = 0
-    testname = "SSD Capacity Test"
-
-    print_test_title(testname)
-    for line in outputinfo:
-        if "User Capacity" in line:
-            click.echo(line.strip())
-            checkin = 1
-
-    if(checkin == 0):
-        click.echo("Can't get SSD capacity")
-
-    echo_empty_line()
-
-    #"""Show ssd serial number"""
-    checkin = 0
-    testname = "SSD SN Test"
-    print_test_title(testname)
-    for line in outputinfo:
-        if "Serial Number" in line:
-            click.echo(line.strip())
-            checkin = 1
-
-    if (checkin == 0):
-        click.echo("Can't get SSD serial number")
-
-    echo_empty_line()
-
-    #"""Show ssd Remaining Time"""
-    checkin = 0
-    testname = "SSD RemainTime Test"
-    print_test_title(testname)
-    for line in outputattr:
-        if "Power_On_Hours" in line:
-            rawval = line.split()[-1]
-            poweron = int(rawval)
-            checkin = 1
-
-    if(checkin == 1):
-        remainingtime = poweron * 100 / 7.62 - poweron
-        click.echo("Remaning Time: {0:.2f} Hours".format(remainingtime))
-    else:
-        click.echo("Can't get 'Power_On_Hours' attributes")
-
-    echo_empty_line()
+    #Show ssd Remaining Time
+    show_ssd_remainingtime(device)
 
     #"""Show ssd P/E cycle"""
-    checkin = 0
-    testname = "SSD P/E Cycle Test"
+    show_ssd_pecycle(device)
 
-    print_test_title(testname)
-    for line in outputinfo:
-        if "Device Model" in line:
-            checkin = 1
-            if ("3ME3" in line) or ("3ME4" in line):
-                cycle = 3000
-            elif ("3IE3" in line):
-                cycle = 20000
-            else:
-                checkin = 0
-                click.echo(line.strip())
-                click.echo("Device Model Not Match 3ME3 3ME4 or 3IE3")
-                return
+    #Check the health status
+    show_ssd_health(device)
 
-    if (checkin == 1):
-        click.echo("Device P/E Cycle: {0}".format(cycle))
-    else:
-        click.echo("Can't get device model")
+    #Check the later bad block status which may created
+    show_ssd_badblock(device)
 
-    echo_empty_line()
-
-    #"""Check the health status"""
-    checkin = 0
-    testname = "SSD Health Test"
-
-    print_test_title(testname)
-    for line in outputinfo:
-        if "Device Model" in line:
-            checkin = 1
-            if ("3ME3" in line) or ("3ME4" in line):
-                cycle = 3000
-            elif ("3IE3" in line):
-                cycle = 20000
-            else:
-                checkin = 0
-                click.echo(line.strip())
-                click.echo("Device Model Not Match 3ME3 3ME4 or 3IE3")
-
-    if (checkin == 0):
-        click.echo("Can't get device model")
-    elif (checkin == 1):
-        checkin = 0
-        for line in outputattr:
-            if "Average_Erase_Count" in line:
-                rawval = line.split()[-1]
-                avgerase = int(rawval)
-                checkin = 1
-
-        if (checkin == 1):
-            #health pre = (P/E cycle - AVG erese)/ P/E cycle
-            healthpre = (cycle - avgerase) * 100.0 / cycle
-            click.echo("Device Health Status Is: {0:.2f}%".format(healthpre))
-        else:
-            click.echo("Can't get Average_Erase_Count attributes")
-
-    echo_empty_line()
-
-    #"""Check the later bad block status which may created"""
-    checkin = 0
-    testname = "SSD Badblock Test"
-    print_test_title(testname)
-    for line in outputattr:
-        if "Later_Bad_Block" in line:
-            rawval = line.split()[-1]
-            click.echo("Later_Bad_Block:         {0}".format(rawval))
-            checkin += 1
-
-        if "Later_Bad_Blk_Inf_R/W/E" in line:
-            rawval_read = line.split()[-3]
-            click.echo("Later_Bad_Blk_Inf Read:  {0}".format(rawval))
-            rawval_write = line.split()[-2]
-            click.echo("Later_Bad_Blk_Inf Write: {0}".format(rawval))
-            rawval_erase = line.split()[-1]
-            click.echo("Later_Bad_Blk_Inf Erase: {0}".format(rawval))
-            checkin += 1
-
-    if (checkin != 2):
-        click.echo("Can't get all 'Later_Bad_Block' attributes")
-
-    echo_empty_line()
-
-    #"""Read SSD temperature range 0~70 C"""
-    checkin = 0
-    testname = "SSD Temperature Test"
-    print_test_title(testname)
-    for line in outputattr:
-        if "Temperature_Celsius" in line:
-            rawval = line.split()[9]
-            temperature = int(rawval)
-            checkin = 1
-
-    if(checkin == 1):
-        click.echo("Temperature_Celsius: {0}C".format(temperature))
-    else:
-        click.echo("Can't get 'Temperature_Celsius' attributes")
-
-    echo_empty_line()
+    # SSD temperature range 0~70 C
+    show_ssd_tempinfo(device)
 
 
 #
@@ -2377,7 +2257,7 @@ def help():
     click.echo("\nUsage: show [options] [device]")
     click.echo("========================= SHOW INFORMATION OPTIONS =========================\n")
     click.echo("{0:30s}{1:<40}".format("    ssd firmwareinfo /dev/xxx",	"show SSD firmware info"))
-    click.echo("{0:30s}{1:<40}".format("    ssd capacity /dev/xxx     ",	"show SSD capacity"))
+    click.echo("{0:30s}{1:<40}".format("    ssd capacity /dev/xxx     ","show SSD capacity"))
     click.echo("{0:30s}{1:<40}".format("    ssd sn /dev/xxx          ",	"show SSD serial number"))
     click.echo("{0:30s}{1:<40}".format("    ssd remaintime /dev/xxx  ",	"show SSD remaining time"))
     click.echo("{0:30s}{1:<40}".format("    ssd pecycle /dev/xxx     ",	"show SSD P/E cycle"))
@@ -2397,7 +2277,7 @@ def check_pcie_speed(device = {}):
     """ check_pcie_speed """
 
     checkin = 0
-    testname = "PCIE Speed Test"
+    testname = "Show Switch PCIE Speed"
 
     erroutput = open("/dev/null", "w")
     for key, val in device.items():
@@ -2443,7 +2323,7 @@ def lnkspeed():
     """show link speed"""
 
     device = {}
-    testname = "PCIE Speed Test"
+    testname = "Show Switch PCIE lnkSpeed"
     command = "sudo lspci"
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
@@ -2476,7 +2356,7 @@ def checkid():
     """show Vender ID and Devie ID Check"""
 
     checkin = 1
-    testname = "Vender ID and Devie ID Check Test"
+    testname = "Show Vender ID and Devie ID"
     command = "sudo lspci -n | grep b960 "
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     output = proc.stdout.readlines()
